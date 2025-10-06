@@ -1,8 +1,14 @@
+package com.twozo.twitter.main;
+
 /*
- *
+ * Making a Twitter based application in Console.
  *
  * version 1.0
  */
+
+import com.twozo.twitter.entity.User;
+import com.twozo.twitter.services.*;
+import com.twozo.twitter.services.interfaces.*;
 
 import java.util.Scanner;
 
@@ -12,14 +18,19 @@ import java.util.Scanner;
  * @version             1.0 25 Sept 2025
  * @author              Mohamed Azif
  */
-class Main {
+public final class Main {
 
     private static final Scanner SCANNER = new Scanner(System.in);
-    // private static final Map<String, User> USER_BY_ID = new HashMap<>();
 
     private static User loggedUser = null;
 
-    public static void main(String[] args) {
+    private Main() { }
+
+    /**
+     * Main method.
+     * @param args Command line arguments
+     */
+    public static void main(final String[] args) {
         System.out.println("Hello and welcome to Twitter model!");
         int choice;
 
@@ -30,14 +41,14 @@ class Main {
         } while (choice != 0);
 
         System.out.println("Goodbye for now!");
-        System.exit(0);
+//        System.exit(0);
     }
 
     /**
      * Displays the menu options depending on user login state.
      */
     private static void showMenu() {
-
+        SCANNER.nextLine();
         if (loggedUser == null) {
             System.out.println("""
                     Menu:
@@ -52,6 +63,7 @@ class Main {
                     4. Follow Suggestions
                     5. Logout""");
         }
+
         System.out.println("0. Exit");
     }
 
@@ -68,7 +80,9 @@ class Main {
             SCANNER.next();
         }
 
-        return SCANNER.nextInt();
+        int choice = SCANNER.nextInt();
+        SCANNER.nextLine();
+        return choice;
     }
 
     /**
@@ -76,43 +90,36 @@ class Main {
      *
      * @param choice the menu choice entered by the user
      */
-    private static void handleChoice(int choice) {
+    private static void handleChoice(final int choice) {
 
         if (loggedUser == null) {
+            RegisterService registerService = ServiceFactory.getRegisterService();
+            LoginService loginService = ServiceFactory.getLoginService();
+
             switch (choice) {
-                case 1:
-                    UserServices.registerUser();
-                    break;
-                case 2:
-                    loggedUser = UserServices.loginUser();
-                    break;
-                case 0:
-                    break;
-                default:
-                    System.out.println("Invalid option!");
+                case 1 -> registerService.registerUser();
+                case 2 -> loggedUser = loginService.loginUser();
+                case 0 -> { }
+                default -> System.out.println("Invalid option!");
             }
         } else {
+            TimelineService timelineService = ServiceFactory.getTimelineService();
+            ProfileService profileService = ServiceFactory.getProfileService();
+            TweetService tweetService = ServiceFactory.getTweetService();
+            FollowSuggestionService followSuggestionService = ServiceFactory.
+                    getFollowSuggestionService();
+
             switch (choice) {
-                case 1:
-                    UserServices.showTimeLine(loggedUser);
-                    break;
-                case 2:
-                    UserServices.showProfile(loggedUser);
-                    break;
-                case 3:
-                    UserServices.postTweet(loggedUser.getUserId());
-                    break;
-                case 4:
-                    UserServices.showUsersToFollow(loggedUser);
-                    break;
-                case 5:
+                case 1 -> timelineService.showTimeLine(loggedUser);
+                case 2 -> profileService.showProfile(loggedUser);
+                case 3 -> tweetService.postTweet(loggedUser.getUserId());
+                case 4 -> followSuggestionService.suggestFollowers(loggedUser);
+                case 5 -> {
                     loggedUser = null;
                     System.out.println("User logged out!");
-                    break;
-                case 0:
-                    break;
-                default:
-                    System.out.println("Invalid option!");
+                }
+                case 0 -> { }
+                default -> System.out.println("Invalid option!");
             }
         }
     }
